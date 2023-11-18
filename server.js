@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import express from 'express';
+import { body, validationResult } from 'express-validator';
 
 const app = express()
 
@@ -11,9 +12,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-//middleWare
-// app.use(bodyParser.json());
-
+ 
 
 // Read the data 
 app.get("/", async(req, res)=>{
@@ -23,9 +22,14 @@ app.get("/", async(req, res)=>{
 
 
 // Create the data 
-app.post("/", async(req, res)=>{
+app.post("/",body('FirstName').isLength({min : 3}),body('LastName').isLength({max: 2}) , async(req, res)=>{
+     const errors = validationResult(req);
+     if(!errors.isEmpty()){
+        return res.status(400).json({errors: errors.array()});
+     }
     const newUser = await prisma.user.create({data: req.body});
     res.json(newUser);
+     
 });
 
 
